@@ -201,7 +201,7 @@ def load_config():
         "botids": [12345, 67890],
         "numberofpairs": 10,
         "maxaltrankscore": 1500,
-        "ignorebotmaxdeals": True,
+        "ignorebotmaxdeals": False,
         "3c-apikey": "Your 3Commas API Key",
         "3c-apisecret": "Your 3Commas API Secret",
         "lc-apikey": "Your LunarCrush API Key",
