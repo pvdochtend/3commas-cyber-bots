@@ -355,6 +355,7 @@ def get_lunarcrush_data():
             "data": "market",
             "type": "fast",
             "sort": "gs",
+            "limit": max([100, numberofpairs]),
             "limit": 100,
             "key": config.get("settings", "lc-apikey"),
             "desc": True,
@@ -470,9 +471,8 @@ def find_pairs(thebot):
             handle_pair(pair, blackpairs, badpairs, newpairs, tickerlist)
 
             # Did we get enough pairs already?
-            if numberofpairs:
-                if len(newpairs) == numberofpairs:
-                    break
+            if len(newpairs) == numberofpairs:
+                break
             else:
                 if (ignorebotmaxdeals is False) and (len(newpairs) == int(thebot["max_active_deals"]))():
                     break
@@ -639,11 +639,18 @@ while True:
     logger.info(f"Reloaded configuration from '{datadir}/{program}.ini'")
 
     # User settings
-    numberofpairs = int(config.get("settings", "numberofpairs"))
-    maxacrscore = int(config.get("settings", "maxaltrankscore", fallback=100))
-    botids = json.loads(config.get("settings", "botids"))
-    timeint = int(config.get("settings", "timeinterval"))
-    ignorebotmaxdeals = config.getboolean("settings", "ignorebotmaxdeals")
+    while True:
+        try:
+            numberofpairs = int(config.get("settings", "numberofpairs"))
+            maxacrscore = int(config.get("settings", "maxaltrankscore", fallback=100))
+            botids = json.loads(config.get("settings", "botids"))
+            timeint = int(config.get("settings", "timeinterval"))
+            ignorebotmaxdeals = config.getboolean("settings", "ignorebotmaxdeals")
+
+    # Error handling if there is a new key added and old config is still available
+        except configparser.NoOptionError:
+            logger.error("Error loading config, please regenerate config file and verify settings")
+            quit(1)
 
     # Update the blacklist and download lunarcrush data
     blacklist = load_blacklist()

@@ -201,6 +201,7 @@ def load_config():
         "botids": [12345, 67890],
         "numberofpairs": 10,
         "maxaltrankscore": 1500,
+        "ignorebotmaxdeals": False,
         "3c-apikey": "Your 3Commas API Key",
         "3c-apisecret": "Your 3Commas API Secret",
         "lc-apikey": "Your LunarCrush API Key",
@@ -346,7 +347,7 @@ def get_lunarcrush_data():
             "data": "market",
             "type": "fast",
             "sort": "acr",
-            "limit": 100,
+            "limit": max([100, numberofpairs]),
             "key": config.get("settings", "lc-apikey"),
         }
     else:
@@ -354,6 +355,7 @@ def get_lunarcrush_data():
             "data": "market",
             "type": "fast",
             "sort": "gs",
+            "limit": max([100, numberofpairs]),
             "limit": 100,
             "key": config.get("settings", "lc-apikey"),
             "desc": True,
@@ -469,11 +471,10 @@ def find_pairs(thebot):
             handle_pair(pair, blackpairs, badpairs, newpairs, tickerlist)
 
             # Did we get enough pairs already?
-            if numberofpairs:
-                if len(newpairs) == numberofpairs:
-                    break
+            if len(newpairs) == numberofpairs:
+                break
             else:
-                if len(newpairs) == int(thebot["max_active_deals"]):
+                if (ignorebotmaxdeals is False) and (len(newpairs) == int(thebot["max_active_deals"]))():
                     break
 
         except KeyError as err:
@@ -488,6 +489,13 @@ def find_pairs(thebot):
     logger.debug(
         "These pairs are invalid on '%s' and were skipped: %s" % (marketcode, badpairs)
     )
+
+    # Do we have enough pairs to match the bots max_active_deals?
+    if len(newpairs) < int(thebot["max_active_deals"]):
+        logger.info(
+            "There are not enough suggested pairs that made it through the criteria. Pairs: " + str(len(newpairs)) + " and MaxActiveDeals: " +str(int(thebot["max_active_deals"]))
+        )
+        return
 
     if not newpairs:
         logger.info(
@@ -543,8 +551,8 @@ def update_bot(thebot, newpairs):
     if data:
         logger.debug("Bot updated: %s" % data)
         logger.info(
-            "Bot '%s' with id '%s' updated with these pairs:\n%s"
-            % (thebot["name"], thebot["id"], newpairs),
+            "Bot '%s' with id '%s' updated with these pairs (%s):\n%s"
+            % (thebot["name"], thebot["id"], len(newpairs), newpairs),
             True,
         )
     else:
@@ -631,10 +639,18 @@ while True:
     logger.info(f"Reloaded configuration from '{datadir}/{program}.ini'")
 
     # User settings
-    numberofpairs = int(config.get("settings", "numberofpairs"))
-    maxacrscore = int(config.get("settings", "maxaltrankscore", fallback=100))
-    botids = json.loads(config.get("settings", "botids"))
-    timeint = int(config.get("settings", "timeinterval"))
+    while True:
+        try:
+            numberofpairs = int(config.get("settings", "numberofpairs"))
+            maxacrscore = int(config.get("settings", "maxaltrankscore", fallback=100))
+            botids = json.loads(config.get("settings", "botids"))
+            timeint = int(config.get("settings", "timeinterval"))
+            ignorebotmaxdeals = config.getboolean("settings", "ignorebotmaxdeals")
+
+    # Error handling if there is a new key added and old config is still available
+        except configparser.NoOptionError:
+            logger.error("Error loading config, please regenerate config file and verify settings")
+            quit(1)
 
     # Update the blacklist and download lunarcrush data
     blacklist = load_blacklist()
