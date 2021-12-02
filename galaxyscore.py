@@ -474,7 +474,7 @@ def find_pairs(thebot):
             if len(newpairs) == numberofpairs:
                 break
             else:
-                if (ignorebotmaxdeals is False) and (len(newpairs) == int(thebot["max_active_deals"]))():
+                if (ignorebotmaxdeals) and (len(newpairs) == int(thebot["max_active_deals"])):
                     break
 
         except KeyError as err:
@@ -639,18 +639,17 @@ while True:
     logger.info(f"Reloaded configuration from '{datadir}/{program}.ini'")
 
     # User settings
-    while True:
-        try:
-            numberofpairs = int(config.get("settings", "numberofpairs"))
-            maxacrscore = int(config.get("settings", "maxaltrankscore", fallback=100))
-            botids = json.loads(config.get("settings", "botids"))
-            timeint = int(config.get("settings", "timeinterval"))
-            ignorebotmaxdeals = config.getboolean("settings", "ignorebotmaxdeals")
+    try:
+        numberofpairs = int(config.get("settings", "numberofpairs"))
+        maxacrscore = int(config.get("settings", "maxaltrankscore", fallback=100))
+        botids = json.loads(config.get("settings", "botids"))
+        timeint = int(config.get("settings", "timeinterval"))
+        ignorebotmaxdeals = config.getboolean("settings", "ignorebotmaxdeals")
 
     # Error handling if there is a new key added and old config is still available
-        except configparser.NoOptionError:
-            logger.error("Error loading config, please regenerate config file and verify settings")
-            quit(1)
+    except configparser.NoOptionError:
+        logger.error("Error loading config, please regenerate config file and verify settings")
+        quit(1)
 
     # Update the blacklist and download lunarcrush data
     blacklist = load_blacklist()
