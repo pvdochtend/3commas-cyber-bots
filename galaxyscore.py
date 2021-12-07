@@ -474,7 +474,7 @@ def find_pairs(thebot):
             if len(newpairs) == numberofpairs:
                 break
             else:
-                if (ignorebotmaxdeals) and (len(newpairs) == int(thebot["max_active_deals"])):
+                if not ignorebotmaxdeals and (len(newpairs) == int(thebot["max_active_deals"])):
                     break
 
         except KeyError as err:

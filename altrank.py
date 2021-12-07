@@ -474,7 +474,7 @@ def find_pairs(thebot):
             if len(newpairs) == numberofpairs:
                 break
             else:
-                if ignorebotmaxdeals and (len(newpairs) == int(thebot["max_active_deals"])):
+                if not ignorebotmaxdeals and (len(newpairs) == int(thebot["max_active_deals"])):
                     break
 
         except KeyError as err:
@@ -644,7 +644,7 @@ while True:
         maxacrscore = int(config.get("settings", "maxaltrankscore", fallback=100))
         botids = json.loads(config.get("settings", "botids"))
         timeint = int(config.get("settings", "timeinterval"))
-        ignorebotmaxdeals = bool(config.getboolean("settings", "ignorebotmaxdeals"))
+        ignorebotmaxdeals = config.getboolean("settings", "ignorebotmaxdeals")
 
     # Error handling if there is a new key added and old config is still available
     except configparser.NoOptionError:
