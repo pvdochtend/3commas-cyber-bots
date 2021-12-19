@@ -31,7 +31,7 @@ It will monitor LunarCrush's GalaxyScores and use the Top X to create pairs for 
 
 ### How does it work?
 
-The GalaxyScore Top 10 coins from LunarCrush are downloaded, the base pair of each of the specified 3Comma's bots is determined, from this new pairs are constructed, these are checked against your Blacklist on 3Comma's and the market data on 3Comma's (reflecting Binance or FTX data depending ion your exchange) to see if the pairs are valid.
+The GalaxyScore Top 10 coins from LunarCrush are downloaded, the base pair of each of the specified 3Comma's bots is determined, from this new pairs are constructed, these are checked against your Blacklist on 3Comma's and the market data on 3Comma's (reflecting Binance or FTX data depending on your exchange) to see if the pairs are valid.
 
 If this is the case -and the current pairs are different than the current ones- the bot(s) are updated.
 
@@ -126,6 +126,61 @@ notify-urls = [ "tgram://9995888120:BoJPor6opeHyxx5VVZPX-BoJPor6opeHyxx5VVZPX/" 
 
 ### Example output
 ![AltRank](images/altrank.png)
+
+
+## CoinMarketCap bot helper named `coinmarketcap.py`
+Type = trading pair
+
+### What does it do?
+
+It will monitor CoinMarketCap and use the Top X to create pairs for your 3Comma's composite DCA bots to use.
+
+### How does it work?
+
+The CoinMarketCap API is used to request a list, sorted on marketcap and only containing `numberofpairs` coins (Top X coins). The base pair of each of the specified 3Comma's bots is determined, from this new pairs are constructed, these are checked against your Blacklist on 3Comma's and the market data on 3Comma's (reflecting Binance or FTX data depending on your exchange) to see if the pairs are valid.
+
+If this is the case -and the current pairs are different than the current ones- the bot(s) are updated.
+
+After this the bot helper will sleep for the set interval time, after which it will repeat these steps.
+
+NOTE: the 'Trading 24h minimal volume' value in your bot(s) can be used to prevent deals with low volume.
+
+### Configuration
+
+This is the layout of the config file used by the `coinmarketcap.py` bot helper:
+
+-   **timezone** - timezone. (default is 'Europe/Amsterdam')
+-   **timeinterval** - update timeinterval in Seconds. (default is 86400)
+-   **debug** - set to true to enable debug logging to file. (default is False)
+-   **logrotate** - number of days to keep logs. (default = 7)
+-   **botids** - a list of bot id's to manage separated with commas
+-   **numberofpairs** - number of pairs to request from CoinMarketCap. (default is 200)
+-   **3c-apikey** - Your 3Commas API key value.
+-   **3c-apisecret** - Your 3Commas API key secret value.
+-   **cmc-apikey** - Your CoinMarketCap API key value.
+-   **notifications** - set to true to enable notifications. (default = False)
+-   **notify-urls** - one or a list of apprise notify urls, each in " " seperated with commas. See [Apprise website](https://github.com/caronc/apprise) for more information.
+
+
+Example: (keys are bogus)
+```
+[settings]
+timezone = Europe/Amsterdam
+timeinterval = 86400
+debug = False
+logrotate = 14
+botids = [ 123456 ]
+numberofpairs = 200
+3c-apikey = 4mzhnpio6la4h1158ylt2
+3c-apisecret = 4mzhnpio6la4h1158ylt4mzhnpio6la4h1158ylt4mzhnpio6la4h1158ylt4mzhnpio6la4h1158ylt4mzhnpio6la4h1158ylt4mzhnpio6la4h1158ylt4mzhnpio6la4h1158ylt4mzhnpio6la4h1158ylt
+cmc-apikey = 4czrn2yo3la4h4179grp2
+notifications = True
+notify-urls = [ "tgram://9995888120:BoJPor6opeHyxx5VVZPX-BoJPor6opeHyxx5VVZPX/" ]
+```
+
+### Example output
+
+![CoinMarketCap](images/coinmarketcap.png)
 
 
 ## Trailing stoploss bot helper named `trailingstoploss.py`
@@ -312,6 +367,10 @@ Parse incoming Telegram messages, check the format of message for BTC_xxx or USD
 3Commas blacklist and market are checked for the exchange the bot is connected to.  
 The bot(s) need to have "Manually/API (Bot won't open new trades automatically)" as tirgger.  
 It will only react on trigger messages as defined under `[triggers]` in your ini file, it wil ignore any others.
+
+NOTE: You need to relay the 100eyes telegram channel to a non-secure one for the script to be able to subscribe to it.
+You can use a (paid) service like telefeed, still need to see if open-source software is able to do this.
+
 The `watchlist` bot helper config file uses this layout:
 
 -   **timezone** - timezone. (default is 'Europe/Amsterdam')
