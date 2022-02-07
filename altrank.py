@@ -12,6 +12,7 @@ from helpers.logging import Logger, NotificationHandler
 from helpers.misc import (
     format_pair,
     get_lunarcrush_data,
+    get_coinmarketcap_data,
     populate_pair_lists,
     wait_time_interval,
 )
@@ -251,6 +252,7 @@ while True:
     # Download LunarCrush data
     usdtbtcprice = get_threecommas_btcusd(logger, api)
     lunarcrush = get_lunarcrush_data(logger, program, config, usdtbtcprice)
+    coinmarketcap = get_coinmarketcap_data()
 
     # Walk through all bots configured
     for bot in botids:
