@@ -70,24 +70,24 @@ def watchlist_deal(thebot, coin, trade):
     # Construct pair based on bot settings and marketcode (BTC stays BTC, but USDT can become BUSD)
     pair = format_pair(logger, marketcode, base, coin)
 
-    # Check if pair is on 3Commas blacklist
-    if pair in blacklist:
-        logger.debug(
-            "This pair is on your 3Commas blacklist and was skipped: %s" % pair, True
-        )
-        return
-
-    # Check if pair is in bot's pairlist
-    if pair not in thebot["pairs"]:
-        logger.info(
-            "This pair is not in bot's pairlist, and was skipped: %s" % pair,
-            True,
-        )
-        return
-
     if trade == "LONG":
+        # Check if pair is on 3Commas blacklist
+        if pair in blacklist:
+            logger.debug(
+                "This pair is on your 3Commas blacklist and was skipped: %s" % pair, True
+            )
+            return
+
+        # Check if pair is in bot's pairlist
+        if pair not in thebot["pairs"]:
+            logger.info(
+                "This pair is not in bot's pairlist, and was skipped: %s" % pair,
+                True,
+            )
+            return
+
         # We have valid pair for our bot so we trigger an open asap action
-        logger.info("Triggering your 3Commas bot for buy")
+        logger.info("Triggering your 3Commas bot for a buy")
         trigger_threecommas_bot_deal(logger, api, thebot, pair, len(blacklistfile))
     else:
         # Find active deal(s) for this bot so we can close deal(s) for pair
@@ -95,6 +95,7 @@ def watchlist_deal(thebot, coin, trade):
         if deals:
             for deal in deals:
                 if deal["pair"] == pair:
+                    logger.info("Triggering your 3Commas bot for a sell")
                     close_threecommas_deal(logger, api, deal["id"], pair)
                     return
 
@@ -106,8 +107,8 @@ def watchlist_deal(thebot, coin, trade):
             logger.info("No active deal(s) found for bot '%s'" % thebot["name"])
 
 
-def prefetch_market_codes():
-    """Gather and load active deals into database."""
+def prefetch_marketcodes():
+    """Gather and store marketcodes for all bots."""
 
     marketcodearray = {}
     accounts = []
@@ -196,7 +197,7 @@ else:
 api = init_threecommas_api(config)
 
 # Prefect marketcodes for all bots
-marketcodes = prefetch_market_codes()
+marketcodes = prefetch_marketcodes()
 
 # Prefect blacklists
 blacklist = load_blacklist(logger, api, blacklistfile)
