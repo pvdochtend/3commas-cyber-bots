@@ -586,7 +586,7 @@ Type = start deal trigger
 
 ### What does it do?
 
-It will monitor a specific Telegram chat channel and sent a 'start new deal' trigger to the linked bot for that pair.
+It will monitor a specific Telegram chat channel (https://t.me/wiseanalize) and sent a 'start new deal' trigger to the linked bot for that pair.
 
 ### How does it work?
 
@@ -636,6 +636,34 @@ notify-urls = [ "tgram://9995888120:BoJPor6opeHyxx5VVZPX-BoJPor6opeHyxx5VVZPX/" 
 ### Example output
 
 ![Watchlist](images/watchlist.png)
+
+### Format
+
+Format of the telegram messages support are:  
+
+Trigger bot(s) with start deal asap for this pair
+```
+BINANCE
+#USDT_BTC
+LONG
+```
+
+Close any active deals for the bot(s) configured for this pair:
+```
+BINANCE
+#USDT_BTC
+CLOSE
+```
+Or
+```
+BINANCE
+#USDT_BTC
+LONG
+CLOSE
+```
+
+Exchange can be 'BINANCE', 'KUCOIN' or 'FTX'
+
 
 ## Watchlist bot helper named `watchlist_100eyes.py `
 Type = start deal trigger
@@ -1234,19 +1262,24 @@ Wallets:
 - BTC (BTC)   : 18igByUc1W2PVdP7Z6MFm2XeQMCtfVZJw4
 - BTC (ERC20) : 0x73b41c3996315e921cb38d5d1bca13502bd72fe5
 
+Free crypto:
 Or at least join my Pi mining team, it's free:
 
 <img src="images/pi-icon.png" height="48" align="left"> 1π! Pi is a new digital currency developed by Stanford PhDs, with over 25 million members worldwide. To claim your Pi, follow this link https://minepi.com/cyberjunky and use my username (cyberjunky) as your invitation code. 
 
-My referral links (gives you discount and/or less fees to pay):
+Claim free crypto (Hi Dollars) every day by answering a simple daily question. https://hi.com/cyberjunky  
+
+My referral links: (gives you discount and/or less fees to pay):
+
+- [Prosum Solutions Indicators](https://prosum-solutions.store/ref/ron.klinkien/?campaign=cyberbothelpers) Excellent TradingView indicators QFL Base Breaking, Price Change Scalper, 3Commas DCA, and more.. have a look and try them! Featured in TheTradingParot video's. Use above link and coupon code: DJWNGFHXTI for 15% discount!
+
+  Look here for instruction video(s): [Prosum Solutions YouTube Channel](https://www.youtube.com/channel/UCUoCoHjp67pQwYJQgpsrz1w/videos)
 
 - [LunarCrush](https://lnr.app/s/o3p1V2) Earn points
 - [Binance](https://accounts.binance.com/en/register?ref=156153717)
 - [FTX](https://ftx.com/#a=38250549) Get 5.00% fee discount
 - [3Commas](https://3commas.io/?c=tc587527) Get 10% discount for first monthly subscription
 - [Bybit](https://www.bybit.com/en-US/invite?ref=QXGO00) Give $20
-- [Bitvavo](https://bitvavo.com/?a=90A596F835) No fees over first €1000 trading
-- [Tradingview](https://www.tradingview.com/gopro/?share_your_love=cyberjunkynl) Get upto $30
 - [Bitvavo](https://bitvavo.com/?a=90A596F835) No fees over €1000 trading in first week
 - [TradingView](https://www.tradingview.com/gopro/?share_your_love=cyberjunkynl) Get up to $30 each after they upgrade to a paid plan
 

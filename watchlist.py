@@ -13,6 +13,7 @@ from telethon import TelegramClient, events
 from helpers.logging import Logger, NotificationHandler
 from helpers.misc import format_pair
 from helpers.threecommas import (
+    close_threecommas_deal,
     get_threecommas_account_marketcode,
     init_threecommas_api,
     load_blacklist,
@@ -49,7 +50,7 @@ def load_config():
     return None
 
 
-def watchlist_deal(thebot, coin):
+def watchlist_deal(thebot, coin, trade):
     """Check pair and trigger the bot deal."""
 
     # Gather some bot values
@@ -60,18 +61,11 @@ def watchlist_deal(thebot, coin):
     logger.debug("Base coin for this bot: %s" % base)
     logger.debug("Minimal 24h volume in BTC for this bot: %s" % minvolume)
 
-    # Get marketcode (exchange) from account
-    marketcode = get_threecommas_account_marketcode(logger, api, thebot["account_id"])
+    # Get marketcode from array
+    marketcode = marketcodes.get(thebot["id"])
     if not marketcode:
         return
-
     logger.info("Bot exchange: %s (%s)" % (exchange, marketcode))
-
-    # Update the blacklist
-    skipchecks = False
-    blacklist = load_blacklist(logger, api, blacklistfile)
-    if len(blacklistfile):
-        skipchecks = True
 
     # Construct pair based on bot settings and marketcode (BTC stays BTC, but USDT can become BUSD)
     pair = format_pair(logger, marketcode, base, coin)
@@ -85,15 +79,64 @@ def watchlist_deal(thebot, coin):
 
     # Check if pair is in bot's pairlist
     if pair not in thebot["pairs"]:
-        logger.debug(
+        logger.info(
             "This pair is not in bot's pairlist, and was skipped: %s" % pair,
             True,
         )
         return
 
-    # We have valid pair for our bot so we trigger a deal
-    logger.info("Triggering your 3Commas bot")
-    trigger_threecommas_bot_deal(logger, api, thebot, pair, skipchecks)
+    if trade == "LONG":
+        # We have valid pair for our bot so we trigger an open asap action
+        logger.info("Triggering your 3Commas bot for buy")
+        trigger_threecommas_bot_deal(logger, api, thebot, pair, len(blacklistfile))
+    else:
+        # Find active deal(s) for this bot so we can close deal(s) for pair
+        deals = thebot["active_deals"]
+        if deals:
+            for deal in deals:
+                if deal["pair"] == pair:
+                    close_threecommas_deal(logger, api, deal["id"], pair)
+                    return
+
+            logger.info(
+                "No active deal(s) found for bot '%s' and pair '%s'"
+                % (thebot["name"], pair)
+            )
+        else:
+            logger.info("No active deal(s) found for bot '%s'" % thebot["name"])
+
+
+def prefetch_market_codes():
+    """Gather and load active deals into database."""
+
+    marketcodearray = {}
+    accounts = []
+    botids = json.loads(config.get("settings", "usdt-botids")) + json.loads(config.get("settings", "btc-botids"))
+
+    for botid in botids:
+        if botid:
+            boterror, botdata = api.request(
+                entity="bots",
+                action="show",
+                action_id=str(botid),
+            )
+            if botdata:
+                accountid = botdata["account_id"]
+                # Get marketcode (exchange) from account if not already fetched
+                if accountid in accounts:
+                    continue
+                marketcode = get_threecommas_account_marketcode(logger, api, accountid)
+                marketcodearray[botdata["id"]] = marketcode
+                accounts.append(accountid)
+            else:
+                if boterror and "msg" in boterror:
+                    logger.error(
+                        "Error occurred fetching active deals: %s" % boterror["msg"]
+                    )
+                else:
+                    logger.error("Error occurred fetching active deals")
+
+    return marketcodearray
 
 
 # Start application
@@ -152,6 +195,12 @@ else:
 # Initialize 3Commas API
 api = init_threecommas_api(config)
 
+# Prefect marketcodes for all bots
+marketcodes = prefetch_market_codes()
+
+# Prefect blacklists
+blacklist = load_blacklist(logger, api, blacklistfile)
+
 # Watchlist telegram trigger
 client = TelegramClient(
     f"{datadir}/{program}",
@@ -176,6 +225,8 @@ async def callback(event):
             base = pair.split("_")[0].replace("#", "").replace("\n", "")
             coin = pair.split("_")[1].replace("\n", "")
             trade = trigger[2].replace("\n", "")
+            if trade == "LONG" and len(trigger) == 4 and trigger[3] == "CLOSE":
+                trade = "CLOSE"
         except IndexError:
             logger.debug("Invalid trigger message format!")
             return
@@ -186,7 +237,7 @@ async def callback(event):
         logger.debug("Coin: %s" % coin)
         logger.debug("Trade type: %s" % trade)
 
-        if trade != "LONG":
+        if trade not in ('LONG', 'CLOSE'):
             logger.debug(f"Trade type '{trade}' is not supported yet!")
             return
         if base == "USDT":
@@ -216,7 +267,9 @@ async def callback(event):
                 action_id=str(bot),
             )
             if data:
-                await client.loop.run_in_executor(None, watchlist_deal, data, coin)
+                await client.loop.run_in_executor(
+                    None, watchlist_deal, data, coin, trade
+                )
             else:
                 if error and "msg" in error:
                     logger.error("Error occurred triggering bots: %s" % error["msg"])
