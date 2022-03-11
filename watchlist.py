@@ -65,6 +65,7 @@ def watchlist_deal(thebot, coin, trade):
     marketcode = marketcodes.get(thebot["id"])
     if not marketcode:
         return
+    logger.info("Bot: %s" % thebot["name"])
     logger.info("Bot exchange: %s (%s)" % (exchange, marketcode))
 
     # Construct pair based on bot settings and marketcode (BTC stays BTC, but USDT can become BUSD)
@@ -100,18 +101,17 @@ def watchlist_deal(thebot, coin, trade):
                     return
 
             logger.info(
-                "No active deal(s) found for bot '%s' and pair '%s'"
-                % (thebot["name"], pair)
+                "No deal(s) running for bot '%s' and pair '%s'"
+                % (thebot["name"], pair), True
             )
         else:
-            logger.info("No active deal(s) found for bot '%s'" % thebot["name"])
+            logger.info("No deal(s) running for bot '%s'" % thebot["name"], True)
 
 
 def prefetch_marketcodes():
     """Gather and store marketcodes for all bots."""
 
     marketcodearray = {}
-    accounts = []
     botids = json.loads(config.get("settings", "usdt-botids")) + json.loads(config.get("settings", "btc-botids"))
 
     for botid in botids:
@@ -124,18 +124,15 @@ def prefetch_marketcodes():
             if botdata:
                 accountid = botdata["account_id"]
                 # Get marketcode (exchange) from account if not already fetched
-                if accountid in accounts:
-                    continue
                 marketcode = get_threecommas_account_marketcode(logger, api, accountid)
                 marketcodearray[botdata["id"]] = marketcode
-                accounts.append(accountid)
             else:
                 if boterror and "msg" in boterror:
                     logger.error(
-                        "Error occurred fetching active deals: %s" % boterror["msg"]
+                        "Error occurred fetching marketcode data: %s" % boterror["msg"]
                     )
                 else:
-                    logger.error("Error occurred fetching active deals")
+                    logger.error("Error occurred fetching marketcode data")
 
     return marketcodearray
 
