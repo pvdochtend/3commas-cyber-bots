@@ -260,13 +260,13 @@ def lunarcrush_pairs(cfg, thebot):
         ):
             newmaxdeals = originalmaxdeals
 
-        if allowbotstopstart:
-            if len(newpairs) == 0 and thebot["is_enabled"]:
-                # No pairs and bot is running (zero pairs not allowed), so stop it...
-                control_threecommas_bots(logger, api, thebot, "disable")
-            elif len(newpairs) > 0 and not thebot["is_enabled"]:
-                # Valid pairs and bot is not running, so start it...
-                control_threecommas_bots(logger, api, thebot, "enable")
+    if allowbotstopstart:
+        if len(newpairs) == 0 and thebot["is_enabled"]:
+            # No pairs and bot is running (zero pairs not allowed), so stop it...
+            control_threecommas_bots(logger, api, thebot, "disable")
+        elif len(newpairs) > 0 and not thebot["is_enabled"]:
+            # Valid pairs and bot is not running, so start it...
+            control_threecommas_bots(logger, api, thebot, "enable")
 
     # Update the bot with the new pairs
     if newpairs:
@@ -276,7 +276,6 @@ def lunarcrush_pairs(cfg, thebot):
             f"None of the 3c-tools bot-assist suggested pairs have been found on "
             f"the {exchange} ({marketcode}) exchange!"
         )
-
 
 # Start application
 program = Path(__file__).stem
@@ -385,7 +384,16 @@ while True:
                 if botdata:
                     lunarcrush_pairs(config, botdata)
                 else:
-                    if boterror and "msg" in boterror:
+                    if boterror and "status_code" in boterror:
+                        if boterror["status_code"] == 404:
+                            logger.error(
+                                "Error occurred updating bots: bot with id '%s' was not found" % botid
+                            )
+                        else:
+                            logger.error(
+                                "Error occurred updating bots: %s" % boterror["msg"]
+                            )
+                    elif boterror and "msg" in boterror:
                         logger.error(
                             "Error occurred updating bots: %s" % boterror["msg"]
                         )
@@ -393,6 +401,11 @@ while True:
                         logger.error("Error occurred updating bots")
             else:
                 logger.error("Invalid botid found: %s" % botid)
+        elif section not in ("settings"):
+            logger.warning(
+                f"Section '{section}' not processed (prefix 'bot_' missing)!",
+                False
+            )
 
     if not wait_time_interval(logger, notification, timeint):
         break
