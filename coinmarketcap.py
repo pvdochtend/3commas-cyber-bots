@@ -12,10 +12,12 @@ import time
 from pathlib import Path
 from helpers.database import get_next_process_time, set_next_process_time
 
+from helpers.datasources import (
+    get_coinmarketcap_data
+)
 from helpers.logging import Logger, NotificationHandler
 from helpers.misc import (
     format_pair,
-    get_coinmarketcap_data,
     populate_pair_lists,
     remove_excluded_pairs,
     unix_timestamp_to_string,
@@ -240,7 +242,7 @@ def coinmarketcap_pairs(thebot, cmcdata):
             coin = entry["symbol"]
             # Construct pair based on bot settings and marketcode
             # (BTC stays BTC, but USDT can become BUSD)
-            pair = format_pair(logger, marketcode, base, coin)
+            pair = format_pair(marketcode, base, coin)
 
             # Populate lists
             populate_pair_lists(

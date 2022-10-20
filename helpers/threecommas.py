@@ -1,4 +1,5 @@
 """Cyberjunky's 3Commas bot helpers."""
+from math import isnan, nan
 from py3cw.request import Py3CW
 
 
@@ -69,25 +70,33 @@ def get_threecommas_blacklist(logger, api):
 def get_threecommas_btcusd(logger, api):
     """Get current USDT_BTC value to calculate BTC volume24h in USDT."""
 
-    price = 60000
+    price = get_threecommas_currency_rate(logger, api, "binance", "USDT_BTC")
+    if isnan(price):
+        price = 60000
+
+    return price
+
+
+def get_threecommas_currency_rate(logger, api, market_code, pair):
+    """Get current price of pair on selected market."""
+
+    price = nan
     error, data = api.request(
         entity="accounts",
         action="currency_rates",
-        payload={"market_code": "binance", "pair": "USDT_BTC"},
+        payload={"market_code": market_code, "pair": pair},
     )
     if data:
-        logger.info("Fetched 3Commas BTC price OK (%s USDT)" % data["last"])
         price = data["last"]
+        logger.info(f"Fetched 3Commas price OK ({price})")
     else:
         if error and "msg" in error:
             logger.error(
-                "Fetching 3Commas BTC price in USDT failed with error: %s"
-                % error["msg"]
+                f"Fetching 3Commas price failed with error: {error['msg']}"
             )
         else:
             logger.error("Fetching 3Commas BTC price in USDT failed")
 
-    logger.debug("Current price of BTC is %s USDT" % price)
     return price
 
 
@@ -188,6 +197,33 @@ def get_threecommas_account_balance(logger, api, accountid):
     else:
         logger.error(
             "Fetching 3Commas account balances data failed for id %s", accountid
+        )
+
+    return None
+
+
+
+def get_threecommas_account_table_balance(logger, api, accountid):
+    """Get complete account balances."""
+
+    # Fetch account balance data for accountid, in real mode
+    error, data = api.request(
+        entity="accounts",
+        action="account_table_data",
+        action_id=str(accountid),
+        additional_headers={"Forced-Mode": "real"},
+    )
+    if data:
+        return data
+
+    if error and "msg" in error:
+        logger.error(
+            "Fetching 3Commas account table balances data failed for id %s error: %s"
+            % (accountid, error["msg"])
+        )
+    else:
+        logger.error(
+            "Fetching 3Commas account table balances data failed for id %s", accountid
         )
 
     return None
@@ -432,7 +468,7 @@ def get_threecommas_deals(logger, api, botid, actiontype="finished"):
         else:
             logger.error("Error occurred while fetching deals")
     else:
-        logger.info("Fetched the deals for bot OK (%s deals)" % len(data))
+        logger.debug("Fetched the deals for bot %s OK (%s deals)" % (botid, len(data)))
 
     return data
 
@@ -461,3 +497,28 @@ def close_threecommas_deal(logger, api, dealid, pair):
         )
 
     return data
+
+
+def get_threecommas_bots(logger, api, accountid):
+    """Get account details."""
+
+    # Find bots data for accountid
+    error, data = api.request(
+        entity="bots",
+        action="",
+        payload= {
+            "account_id": accountid
+        }
+    )
+
+    if data:
+        return data
+
+    if error and "msg" in error:
+        logger.error(
+            "Fetching 3Commas bots data failed for id %s error: %s"
+            % (accountid, error["msg"])
+        )
+    # No else, there are just no bots for the account
+
+    return None

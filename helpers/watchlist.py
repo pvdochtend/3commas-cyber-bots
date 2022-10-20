@@ -22,6 +22,7 @@ def prefetch_marketcodes(logger, api, botids):
             )
             if botdata:
                 accountid = botdata["account_id"]
+                logger.info(f"Account id: {accountid}")
                 # Get marketcode (exchange) from account if not already fetched
                 marketcode = get_threecommas_account_marketcode(logger, api, accountid)
                 marketcodearray[botdata["id"]] = marketcode
@@ -91,7 +92,7 @@ def process_bot_deal(logger, api, blacklistfile, blacklist, marketcodes, thebot,
     logger.info("Exchange %s (%s) used" % (bot_exchange, marketcode))
 
     # Construct pair based on bot settings and marketcode (BTC stays BTC, but USDT can become BUSD)
-    pair = format_pair(logger, marketcode, base, coin)
+    pair = format_pair(marketcode, base, coin)
 
     deals = thebot["active_deals"]
     if trade == "LONG":

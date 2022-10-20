@@ -29,6 +29,18 @@ They have their own documentation page in the wiki describing what it can do and
 Since I rather don't want to pay for Monthly services if this is not needed I started to write some scripts myself, learning more about Crypto along the way.
 
 
+## Overview & Account management
+
+Get overview and statistics in order to get an overview and manage your account and funds easily.
+
+### Balance Report (balancereport.py)
+A script which examins the connected exchanges, bots and deals on your account. Based on al this data, an overview is generated of funds in use and the amount available.
+
+![BalanceReport](images/balancereport.png)
+
+[BalanceReport Documentation](https://github.com/cyberjunky/3commas-cyber-bots/wiki/BalanceReport)
+
+
 ## Bot Pair changers
 
 Change pairs of your bot(s) matching configured rankings and/or thresholds.
@@ -541,6 +553,7 @@ My referral links: (gives you discount and/or less fees to pay):
 - [Bybit](https://www.bybit.com/en-US/invite?ref=QXGO00) Give $20
 - [Bitvavo](https://bitvavo.com/?a=90A596F835) No fees over €1000 trading in first week
 - [TradingView](https://www.tradingview.com/gopro/?share_your_love=cyberjunkynl) Get up to $30 each after they upgrade to a paid plan
+- [CoinMaketCap](https://coinmarketcap.com/invite?ref=3IYRT0KW) Earn rewards together!
 
 ## Disclamer (Reminder)
 ```
